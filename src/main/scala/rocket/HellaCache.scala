@@ -108,7 +108,7 @@ abstract class L1HellaCacheBundle(implicit val p: Parameters) extends Parameteri
 /** Bundle definitions for HellaCache interfaces */
 
 trait HasCoreMemOp extends HasL1HellaCacheParameters {
-  val addr = UInt(coreMaxAddrBits.W)
+  val addr = UInt(64.W)
   val idx  = (usingVM && untagBits > pgIdxBits).option(UInt(coreMaxAddrBits.W))
   val tag  = UInt((coreParams.dcacheReqTagBits + log2Ceil(dcacheArbPorts)).W)
   val cmd  = UInt(M_SZ.W)
