@@ -36,8 +36,11 @@ class CustomCSRs(implicit p: Parameters) extends CoreBundle {
   protected def htBaseCSRId = 0x7c2
   protected def htBaseCSR: Option[CustomCSR] = None
 
+  protected def hasidCSRId = 0x7c3
+  protected def hasidCSR: Option[CustomCSR] = None
+
   // If you override this, you'll want to concatenate super.decls
-  def decls: Seq[CustomCSR] = bpmCSR.toSeq ++ chickenCSR ++ htBaseCSR
+  def decls: Seq[CustomCSR] = bpmCSR.toSeq ++ chickenCSR ++ htBaseCSR ++ hasidCSR
 
   val csrs = Vec(decls.size, new CustomCSRIO)
 
@@ -49,6 +52,7 @@ class CustomCSRs(implicit p: Parameters) extends CoreBundle {
   def disableSpeculativeICacheRefill = getOrElse(chickenCSR, _.value(3), false.B)
   def suppressCorruptOnGrantData = getOrElse(chickenCSR, _.value(9), false.B)
   def htBase = getOrElse(htBaseCSR, _.value, "h0000_0000_0000_00f0".U(xLen.W))
+  def hasid = getOrElse(hasidCSR, _.value, "h0000_0000_0000_0000".U(xLen.W))
 
   protected def getByIdOrElse[T](id: Int, f: CustomCSRIO => T, alt: T): T = {
     val idx = decls.indexWhere(_.id == id)
