@@ -73,6 +73,7 @@ trait MemoryOpConstants {
   def M_PRODUCE = "b10010".U // write back dirty data and cede W permissions
   def M_CLEAN   = "b10011".U // write back dirty data and retain R/W permissions
   def M_SFENCE  = "b10100".U // SFENCE.VMA
+  def M_SHFENCE = "b11100".U // SFENCE.VMA
   def M_HFENCEV = "b10101".U // HFENCE.VVMA
   def M_HFENCEG = "b10110".U // HFENCE.GVMA
   def M_WOK     = "b10111".U // check write permissions but don't perform a write
