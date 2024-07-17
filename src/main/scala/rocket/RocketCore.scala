@@ -36,7 +36,7 @@ case class RocketCoreParams(
   haveCFlush: Boolean = false,
   misaWritable: Boolean = true,
   nL2TLBEntries: Int = 0,
-  nL2TLBWays: Int = 1,
+  nL2TLBWays: Int = 16,
   nPTECacheEntries: Int = 8,
   mtvecInit: Option[BigInt] = Some(BigInt(0)),
   mtvecWritable: Boolean = true,
