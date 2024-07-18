@@ -274,6 +274,7 @@ class CSRFileIO(hasBeu: Boolean)(implicit p: Parameters) extends CoreBundle
   val eret = Output(Bool())
   val singleStep = Output(Bool())
 
+  val clear_mie = Input(Bool())
   val status = Output(new MStatus())
   val hstatus = Output(new HStatus())
   val gstatus = Output(new MStatus())
