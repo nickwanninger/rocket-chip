@@ -80,6 +80,7 @@ class TLBPTWIO(implicit p: Parameters) extends CoreBundle()(p)
   val gstatus = Input(new MStatus())
   val pmp = Input(Vec(nPMPs, new PMP))
   val customCSRs = Flipped(coreParams.customCSRs)
+  val l1miss = Output(Bool())
 }
 /** PTW performance statistics */
 class PTWPerfEvents extends Bundle {
@@ -87,6 +88,7 @@ class PTWPerfEvents extends Bundle {
   val l2hit = Bool()
   val pte_miss = Bool()
   val pte_hit = Bool()
+  val l1miss = Bool()
 }
 
 /** Datapath IO between PTW and Core
@@ -399,6 +401,8 @@ class PTW(n: Int)(implicit edge: TLEdgeOut, p: Parameters) extends CoreModule()(
   l2_refill_wire := l2_refill
   io.dpath.perf.l2miss := false.B
   io.dpath.perf.l2hit := false.B
+  io.dpath.perf.l1miss := io.requestor.map(_.l1miss).reduce(_ || _)
+  // io.dpath.perf.l1hit := false.B // io.requestor.map(_.l1hit).reduce(_ || _)
   // l2tlb
   val (l2_hit, l2_error, l2_pte, l2_tlb_ram) = if (coreParams.nL2TLBEntries == 0) (false.B, false.B, WireDefault(0.U.asTypeOf(new PTE)), None) else {
     val code = new ParityCode
