@@ -33,10 +33,10 @@ class CustomCSRs(implicit p: Parameters) extends CoreBundle {
   protected def chickenCSRId = 0x7c1
   protected def chickenCSR: Option[CustomCSR] = None
 
-  protected def htBaseCSRId = 0x7c2
+  protected def htBaseCSRId = 0xc2
   protected def htBaseCSR: Option[CustomCSR] = None
 
-  protected def htDumpCSRId = 0x7c3
+  protected def htDumpCSRId = 0xc3
   protected def htDumpCSR: Option[CustomCSR] = None
 
   // If you override this, you'll want to concatenate super.decls
