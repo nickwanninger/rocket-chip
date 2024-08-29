@@ -39,8 +39,11 @@ class CustomCSRs(implicit p: Parameters) extends CoreBundle {
   protected def htDumpCSRId = 0xc3
   protected def htDumpCSR: Option[CustomCSR] = None
 
+  protected def htInvalCSRId = 0xc4
+  protected def htInvalCSR: Option[CustomCSR] = None
+
   // If you override this, you'll want to concatenate super.decls
-  def decls: Seq[CustomCSR] = bpmCSR.toSeq ++ chickenCSR ++ htBaseCSR ++ htDumpCSR
+  def decls: Seq[CustomCSR] = bpmCSR.toSeq ++ chickenCSR ++ htBaseCSR ++ htDumpCSR ++ htInvalCSR
 
   val csrs = Vec(decls.size, new CustomCSRIO)
 
@@ -53,6 +56,7 @@ class CustomCSRs(implicit p: Parameters) extends CoreBundle {
   def suppressCorruptOnGrantData = getOrElse(chickenCSR, _.value(9), false.B)
   def htBase = getOrElse(htBaseCSR, _.value, "h0".U(maxSVAddrBits.W))
   def htDump = getOrElse(htDumpCSR, _.value, "h0".U(maxSVAddrBits.W))
+  def htInval = getOrElse(htInvalCSR, _.value, "h0".U(handleBits.W))
 
   protected def getByIdOrElse[T](id: Int, f: CustomCSRIO => T, alt: T): T = {
     val idx = decls.indexWhere(_.id == id)
