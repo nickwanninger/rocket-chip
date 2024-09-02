@@ -229,6 +229,7 @@ class PTW(n: Int)(implicit edge: TLEdgeOut, p: Parameters) extends CoreModule()(
       * contains CSRs info and performance statistics
       */
     val dpath = new DatapathPTWIO
+    val l2tlb_miss = Output(Valid(UInt(maxSVAddrBits.W)))
   })
 
   val s_ready :: s_req :: s_wait1 :: s_dummy1 :: s_wait2 :: s_wait3 :: s_dummy2 :: s_fragment_superpage :: Nil = Enum(8)
@@ -301,6 +302,20 @@ class PTW(n: Int)(implicit edge: TLEdgeOut, p: Parameters) extends CoreModule()(
       mem_resp_data := resp.bits.data
     }
   }
+
+  // when (mem_resp_valid) {
+  //   midas.targetutils.SynthesizePrintf(printf("[PTW] mem.resp: data=%x\n", RegNext(io.mem.resp.bits.data)))
+  //   val page_numbers = VecInit(io.mem.resp.bits.data.asBools.grouped(64).map(_.asUInt).toSeq).map(chunk => chunk(53, 10))
+  //   val consecutiveChecks = Wire(Vec(page_numbers.size - 1, Bool()))
+  //   for (i <- 0 until page_numbers.size) {
+  //     midas.targetutils.SynthesizePrintf(printf("[PTW] mem.resp: page_number[%d]=%x\n", i.U, page_numbers(i)))
+  //   }
+  //   for (i <- 0 until page_numbers.size - 1) {
+  //     consecutiveChecks(i) := page_numbers(i + 1) === (page_numbers(i) + 1.U)
+  //   }
+  //   midas.targetutils.SynthesizePrintf(printf("[PTW] consecutiveChecks: %b", consecutiveChecks.asUInt))
+  // }
+
   // construct pte from mem.resp
   val (pte, invalid_paddr, invalid_gpa) = {
     val tmp = mem_resp_data.asTypeOf(new PTE())
@@ -531,6 +546,14 @@ class PTW(n: Int)(implicit edge: TLEdgeOut, p: Parameters) extends CoreModule()(
   io.mem.req.bits.no_xcpt := DontCare
   io.mem.req.bits.data := DontCare
   io.mem.req.bits.mask := DontCare
+
+  // when (io.mem.req.valid) {
+  //   midas.targetutils.SynthesizePrintf(printf("[PTW] mem.req: addr=%x\n", pte_addr))
+  // }
+
+  // printf("MrmReqSize: %d, (%b) \n", io.mem.req.bits.size, io.mem.req.bits.size)
+  io.l2tlb_miss.valid := io.mem.req.valid
+  io.l2tlb_miss.bits := pte_addr
 
   io.mem.s1_kill := l2_hit || (state =/= s_wait1) || resp_gf
   io.mem.s1_data := DontCare
