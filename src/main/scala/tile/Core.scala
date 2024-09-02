@@ -47,6 +47,10 @@ trait CoreParams {
   val haveCFlush: Boolean
   val nL2TLBEntries: Int
   val nL2TLBWays: Int
+  val nL1HTLBEntries: Int
+  val nL1HTLBWays: Int
+  val nL2HTLBEntries: Int
+  val nL2HTLBWays: Int
   val nPTECacheEntries: Int
   val mtvecInit: Option[BigInt]
   val mtvecWritable: Boolean
