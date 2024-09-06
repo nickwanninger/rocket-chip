@@ -54,9 +54,9 @@ class CustomCSRs(implicit p: Parameters) extends CoreBundle {
   def disableCoreClockGate = getOrElse(chickenCSR, _.value(2), false.B)
   def disableSpeculativeICacheRefill = getOrElse(chickenCSR, _.value(3), false.B)
   def suppressCorruptOnGrantData = getOrElse(chickenCSR, _.value(9), false.B)
-  def htBase = getOrElse(htBaseCSR, _.value, "h0".U(maxSVAddrBits.W))
-  def htDump = getOrElse(htDumpCSR, _.value, "h0".U(maxSVAddrBits.W))
-  def htInval = getOrElse(htInvalCSR, _.value, "h0".U(handleBits.W))
+  def htBase = getOrElse(htBaseCSR, _.value, "h0".U(xLen.W))
+  def htDump = getOrElse(htDumpCSR, _.value, "h0".U(xLen.W))
+  def htInval = getOrElse(htInvalCSR, _.value, "h0".U(xLen.W))
 
   protected def getByIdOrElse[T](id: Int, f: CustomCSRIO => T, alt: T): T = {
     val idx = decls.indexWhere(_.id == id)

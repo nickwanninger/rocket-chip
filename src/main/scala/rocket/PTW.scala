@@ -229,7 +229,7 @@ class PTW(n: Int)(implicit edge: TLEdgeOut, p: Parameters) extends CoreModule()(
       * contains CSRs info and performance statistics
       */
     val dpath = new DatapathPTWIO
-    val l2tlb_miss = Output(Valid(UInt(maxSVAddrBits.W)))
+    val l2tlb_miss = Output(Bool())
   })
 
   val s_ready :: s_req :: s_wait1 :: s_dummy1 :: s_wait2 :: s_wait3 :: s_dummy2 :: s_fragment_superpage :: Nil = Enum(8)
@@ -293,7 +293,7 @@ class PTW(n: Int)(implicit edge: TLEdgeOut, p: Parameters) extends CoreModule()(
   val vpn = Mux(r_req.vstage1 && stage2, aux_pte.ppn, r_req.addr)
 
   val mem_resp_valid = RegNext(io.mem.resp.valid)
-  val mem_resp_data = RegNext(io.mem.resp.bits.data)
+  val mem_resp_data = RegNext(io.mem.resp.bits.data(63, 0))
   io.mem.uncached_resp.map { resp =>
     assert(!(resp.valid && io.mem.resp.valid))
     resp.ready := true.B
@@ -547,13 +547,30 @@ class PTW(n: Int)(implicit edge: TLEdgeOut, p: Parameters) extends CoreModule()(
   io.mem.req.bits.data := DontCare
   io.mem.req.bits.mask := DontCare
 
+  // TODO: we need a new FSM that integrates with global state to make this fucking work, whiteboard it out.
+  val base_addr = pte_addr & ~("b111111".U(64.W))
+  val index_pulled = (pte_addr & ((1.U << 6) - 1.U))/8.U
+  val mask = UIntToOH(index_pulled(2, 0))
+  val remaining_mask = RegInit(0.U(8.W))
+  when (io.mem.req.valid && remaining_mask === 0.U) {
+    remaining_mask := ~mask
+    midas.targetutils.SynthesizePrintf(printf("[CoLT] naturally pulled pte_addr: %x, base_addr: %x, index: %b, remaining_mask: %b\n", pte_addr, base_addr, mask, remaining_mask))
+  }
+  // when (remaining_mask =/= 0.U) {
+  //   val index = PriorityEncoder(remaining_mask)
+  //   // midas.targetutils.SynthesizePrintf(printf("[CoLT] should also pull pte_addr: %x\n", base_addr + index*8.U))
+  //   remaining_mask := remaining_mask & ~(1.U << index)
+  // }
+
   // when (io.mem.req.valid) {
   //   midas.targetutils.SynthesizePrintf(printf("[PTW] mem.req: addr=%x\n", pte_addr))
   // }
 
   // printf("MrmReqSize: %d, (%b) \n", io.mem.req.bits.size, io.mem.req.bits.size)
-  io.l2tlb_miss.valid := io.mem.req.valid
-  io.l2tlb_miss.bits := pte_addr
+  io.l2tlb_miss := io.mem.req.valid && !(io.mem.s1_kill)
+  when (io.l2tlb_miss) {
+    midas.targetutils.SynthesizePrintf(printf("[PTW]io.l2tlb_miss: %d, io.mem.req.valid: %d, io.mem.s1_kill: %d\n", io.l2tlb_miss, io.mem.req.valid, io.mem.s1_kill))
+  }
 
   io.mem.s1_kill := l2_hit || (state =/= s_wait1) || resp_gf
   io.mem.s1_data := DontCare
