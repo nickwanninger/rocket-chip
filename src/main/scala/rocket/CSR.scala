@@ -275,6 +275,7 @@ class CSRFileIO(hasBeu: Boolean)(implicit p: Parameters) extends CoreBundle
   val singleStep = Output(Bool())
 
   val clear_mie = Input(Bool())
+  val clear_htlb = Output(Bool())
   val status = Output(new MStatus())
   val hstatus = Output(new HStatus())
   val gstatus = Output(new MStatus())
@@ -388,6 +389,8 @@ class CSRFile(
   })
 
   io.rw_stall := false.B
+
+  io.clear_htlb := false.B
 
   val reset_mstatus = WireDefault(0.U.asTypeOf(new MStatus()))
   reset_mstatus.mpp := PRV.M.U
@@ -1525,6 +1528,18 @@ class CSRFile(
     }
     for ((io, csr, reg) <- (io.roccCSRs, roccCSRs, reg_rocc).zipped) {
       writeCustomCSR(io, csr, reg)
+    }
+    val ht_asid = RegInit(0.U(reg_satp.asid.getWidth.W))
+    // if we're writing a new ht base, and the asn is different (or the base is different), then clear the htlb
+    val clear_htlb = decoded_addr(customCSRs(1).id) && reg_custom(1)(maxSVAddrBits-1, 0) =/= wdata(maxSVAddrBits-1, 0) || reg_custom(1)(xLen - 1, xLen - 1 - reg_satp.asid.getWidth) =/= ht_asid
+    when (clear_htlb) {
+      when (reg_custom(1)(maxSVAddrBits-1, 0) === 0.U && ht_asid === 0.U) {
+        // skip clearing
+      }.otherwise {
+        io.clear_htlb := true.B
+        midas.targetutils.SynthesizePrintf(printf("[CSR] Clearing HTLB (ht_asid %d -> %d, ht_base %x -> %x)\n", ht_asid, reg_satp.asid, reg_custom(1)(maxSVAddrBits-1, 0), wdata(maxSVAddrBits-1, 0)))
+      }
+      ht_asid := reg_satp.asid
     }
     if (usingVector) {
       when (decoded_addr(CSRs.vstart)) { set_vs_dirty := true.B; reg_vstart.get := wdata }
