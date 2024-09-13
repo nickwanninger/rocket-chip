@@ -85,7 +85,7 @@ trait HasNonDiplomaticTileParameters {
     require(xLen == 32 || xLen == 64, s"Only XLENs of 32 or 64 are supported, but got $xLen")
     xLen match { case 32 => 34; case 64 => 56 }
   }
-  def handleOffsetBits: Int = 24
+  def handleOffsetBits: Int = 32
   def handleBits: Int = xLen - handleOffsetBits - 1
 
   def tileId: Int = tileParams.tileId
