@@ -64,6 +64,7 @@ class TLBReq(lgMaxSize: Int)(implicit p: Parameters) extends CoreBundle()(p) {
   /** virtualization mode */
   val v = Bool()
 
+  val htlb_passthrough = Bool()
 }
 
 class TLBExceptions extends Bundle {
