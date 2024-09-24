@@ -15,6 +15,7 @@ import freechips.rocketchip.util._
 import freechips.rocketchip.util.property
 
 import scala.collection.mutable.ListBuffer
+import chisel3.util.ShiftRegister
 
 /** PTE request from TLB to PTW
   *
@@ -229,7 +230,7 @@ class PTW(n: Int)(implicit edge: TLEdgeOut, p: Parameters) extends CoreModule()(
       * contains CSRs info and performance statistics
       */
     val dpath = new DatapathPTWIO
-    val l2tlb_miss = Output(Bool())
+    val ptw_done = Output(Bool())
   })
 
   val s_ready :: s_req :: s_wait1 :: s_dummy1 :: s_wait2 :: s_wait3 :: s_dummy2 :: s_fragment_superpage :: Nil = Enum(8)
@@ -547,10 +548,12 @@ class PTW(n: Int)(implicit edge: TLEdgeOut, p: Parameters) extends CoreModule()(
   io.mem.req.bits.data := DontCare
   io.mem.req.bits.mask := DontCare
 
-  io.l2tlb_miss := io.mem.req.valid && !(io.mem.s1_kill)
-  when (io.l2tlb_miss) {
-    midas.targetutils.SynthesizePrintf(printf("[PTW]io.l2tlb_miss: %d, io.mem.req.valid: %d, io.mem.s1_kill: %d\n", io.l2tlb_miss, io.mem.req.valid, io.mem.s1_kill))
-  }
+  // val livelock_detector = (1 to 20).toSeq.map(d => ShiftRegister(io.mem.req.valid, d))
+  // io.l2tlb_miss := livelock_detector.reduce(_ && _)
+  io.ptw_done := mem_resp_valid || io.mem.s1_kill
+  // when (io.l2tlb_miss) {
+  //   midas.targetutils.SynthesizePrintf(printf("[PTW]io.l2tlb_miss\n"))
+  // }
 
   io.mem.s1_kill := l2_hit || (state =/= s_wait1) || resp_gf
   io.mem.s1_data := DontCare
@@ -785,6 +788,7 @@ class PTW(n: Int)(implicit edge: TLEdgeOut, p: Parameters) extends CoreModule()(
   ccover(io.mem.s2_nack, "NACK", "D$ nacked page-table access")
   ccover(state === s_wait2 && io.mem.s2_xcpt.ae.ld, "AE", "access exception while walking page table")
 
+  midas.targetutils.PerfCounter(io.dpath.perf.l2miss, "l2_tlb_miss", "L2 TLB Miss")
   } // leaving gated-clock domain
 
   private def ccover(cond: Bool, label: String, desc: String)(implicit sourceInfo: SourceInfo) =
