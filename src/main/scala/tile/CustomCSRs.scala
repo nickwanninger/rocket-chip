@@ -42,8 +42,14 @@ class CustomCSRs(implicit p: Parameters) extends CoreBundle {
   protected def htInvalCSRId = 0xc4
   protected def htInvalCSR: Option[CustomCSR] = None
 
+  protected def htSizeCSRId = 0xc5
+  protected def htSizeCSR: Option[CustomCSR] = None
+
+  protected def l2TLBAccessCSRId = 0xc6
+  protected def l2TLBAccessCSR: Option[CustomCSR] = None
+
   // If you override this, you'll want to concatenate super.decls
-  def decls: Seq[CustomCSR] = bpmCSR.toSeq ++ chickenCSR ++ htBaseCSR ++ htDumpCSR ++ htInvalCSR
+  def decls: Seq[CustomCSR] = bpmCSR.toSeq ++ chickenCSR ++ htBaseCSR ++ htDumpCSR ++ htInvalCSR ++ htSizeCSR ++ l2TLBAccessCSR
 
   val csrs = Vec(decls.size, new CustomCSRIO)
 
@@ -57,6 +63,8 @@ class CustomCSRs(implicit p: Parameters) extends CoreBundle {
   def htBase = getOrElse(htBaseCSR, _.value, "h0".U(xLen.W))
   def htDump = getOrElse(htDumpCSR, _.value, "h0".U(xLen.W))
   def htInval = getOrElse(htInvalCSR, _.value, "h0".U(xLen.W))
+  def htSize = getOrElse(htSizeCSR, _.value, "h0".U(xLen.W))
+  def l2TLBAccess = getOrElse(l2TLBAccessCSR, _.value, "h0".U(xLen.W))
 
   protected def getByIdOrElse[T](id: Int, f: CustomCSRIO => T, alt: T): T = {
     val idx = decls.indexWhere(_.id == id)
