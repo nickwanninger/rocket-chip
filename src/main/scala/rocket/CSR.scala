@@ -1531,7 +1531,7 @@ class CSRFile(
     }
     val ht_asid = RegInit(0.U(reg_satp.asid.getWidth.W))
     // if we're writing a new ht base, and the asn is different (or the base is different), then clear the htlb
-    val clear_htlb = decoded_addr(customCSRs(1).id) && reg_custom(1)(maxSVAddrBits-1, 0) =/= wdata(maxSVAddrBits-1, 0) || reg_custom(1)(xLen - 1, xLen - 1 - reg_satp.asid.getWidth) =/= ht_asid
+    val clear_htlb = decoded_addr(customCSRs(1).id) && (reg_custom(1)(maxSVAddrBits-1, 0) =/= wdata(maxSVAddrBits-1, 0) || reg_custom(1)(xLen - 1, xLen - 1 - reg_satp.asid.getWidth) =/= ht_asid)
     when (clear_htlb) {
       when (reg_custom(1)(maxSVAddrBits-1, 0) === 0.U && ht_asid === 0.U) {
         // skip clearing
