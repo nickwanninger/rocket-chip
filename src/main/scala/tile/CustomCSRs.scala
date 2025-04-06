@@ -52,7 +52,7 @@ class CustomCSRs(implicit p: Parameters) extends CoreBundle {
   protected def handleTracingCSR: Option[CustomCSR] = None
 
   // If you override this, you'll want to concatenate super.decls
-  def decls: Seq[CustomCSR] = bpmCSR.toSeq ++ chickenCSR ++ htBaseCSR ++ htDumpCSR ++ htInvalCSR ++ htSizeCSR ++ l2TLBAccessCSR
+  def decls: Seq[CustomCSR] = bpmCSR.toSeq ++ chickenCSR ++ htBaseCSR ++ htDumpCSR ++ htInvalCSR ++ htSizeCSR ++ l2TLBAccessCSR ++ handleTracingCSR
 
   val csrs = Vec(decls.size, new CustomCSRIO)
 
