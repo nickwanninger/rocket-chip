@@ -230,7 +230,6 @@ class PTW(n: Int)(implicit edge: TLEdgeOut, p: Parameters) extends CoreModule()(
       * contains CSRs info and performance statistics
       */
     val dpath = new DatapathPTWIO
-    val ptw_done = Output(Bool())
   })
 
   val s_ready :: s_req :: s_wait1 :: s_dummy1 :: s_wait2 :: s_wait3 :: s_dummy2 :: s_fragment_superpage :: Nil = Enum(8)
@@ -547,13 +546,6 @@ class PTW(n: Int)(implicit edge: TLEdgeOut, p: Parameters) extends CoreModule()(
   io.mem.req.bits.no_xcpt := DontCare
   io.mem.req.bits.data := DontCare
   io.mem.req.bits.mask := DontCare
-
-  // val livelock_detector = (1 to 20).toSeq.map(d => ShiftRegister(io.mem.req.valid, d))
-  // io.l2tlb_miss := livelock_detector.reduce(_ && _)
-  io.ptw_done := mem_resp_valid || io.mem.s1_kill
-  // when (io.l2tlb_miss) {
-  //   midas.targetutils.SynthesizePrintf(printf("[PTW]io.l2tlb_miss\n"))
-  // }
 
   io.mem.s1_kill := l2_hit || (state =/= s_wait1) || resp_gf
   io.mem.s1_data := DontCare
