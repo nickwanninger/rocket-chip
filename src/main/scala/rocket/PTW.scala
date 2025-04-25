@@ -781,6 +781,16 @@ class PTW(n: Int)(implicit edge: TLEdgeOut, p: Parameters) extends CoreModule()(
   ccover(state === s_wait2 && io.mem.s2_xcpt.ae.ld, "AE", "access exception while walking page table")
 
   midas.targetutils.PerfCounter(io.dpath.perf.l2miss, "l2_tlb_miss", "L2 TLB Miss")
+  midas.targetutils.PerfCounter(
+      (state === s_req),
+      "ptw_req_latency", 
+      "ptw_req_latency", 
+    )
+  midas.targetutils.PerfCounter(
+      (state === s_wait1 || state === s_wait2 || state === s_wait3),
+      "ptw_wait_latency", 
+      "ptw_wait_latency", 
+    )
   } // leaving gated-clock domain
 
   private def ccover(cond: Bool, label: String, desc: String)(implicit sourceInfo: SourceInfo) =
