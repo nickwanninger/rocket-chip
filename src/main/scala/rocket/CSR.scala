@@ -275,6 +275,7 @@ class CSRFileIO(hasBeu: Boolean)(implicit p: Parameters) extends CoreBundle
   val singleStep = Output(Bool())
 
   val clear_htlb = Output(Bool())
+  val clear_mie = Input(Bool())
   val status = Output(new MStatus())
   val hstatus = Output(new HStatus())
   val gstatus = Output(new MStatus())
@@ -1527,6 +1528,17 @@ class CSRFile(
         midas.targetutils.SynthesizePrintf(printf("[CSR] Clearing HTLB (ht_asid %d -> %d, ht_base %x -> %x)\n", ht_asid, reg_satp.asid, reg_custom(1)(maxSVAddrBits-1, 0), wdata(maxSVAddrBits-1, 0)))
       }
       ht_asid := reg_satp.asid
+    }
+    val tmp_reg_mie = RegInit(0.U(xLen.W))
+    when (reg_mie =/= 0.U && io.clear_mie) {
+      tmp_reg_mie := reg_mie
+      midas.targetutils.SynthesizePrintf(printf("[CSR] Turning off interrupts, prior state was %d\n", reg_mie))
+      reg_mie := 0.U
+    }
+    when (tmp_reg_mie =/= 0.U && io.clear_mie === false.B) {
+      midas.targetutils.SynthesizePrintf(printf("[CSR] Turning on interrupts, prior state was %d\n", tmp_reg_mie))
+      reg_mie := tmp_reg_mie
+      tmp_reg_mie := 0.U
     }
     if (usingVector) {
       when (decoded_addr(CSRs.vstart)) { set_vs_dirty := true.B; reg_vstart.get := wdata }
