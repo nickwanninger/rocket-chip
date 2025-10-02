@@ -26,6 +26,7 @@ class PTWReq(implicit p: Parameters) extends CoreBundle()(p) {
   val need_gpa = Bool()
   val vstage1 = Bool()
   val stage2 = Bool()
+  val handle = Bool()
 }
 
 /** PTE info from L2TLB to TLB
