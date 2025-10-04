@@ -594,6 +594,7 @@ class CSRFile(
   val reg_mcountinhibit = RegInit(0.U((CSR.firstHPM + nPerfCounters).W))
   io.inhibit_cycle := reg_mcountinhibit(0)
   val reg_instret = WideCounter(64, io.retire, inhibit = reg_mcountinhibit(2))
+  midas.targetutils.PerfCounter(io.retire, "instret", "instret")
   val reg_cycle = if (enableCommitLog) WideCounter(64, io.retire,     inhibit = reg_mcountinhibit(0))
     else withClock(io.ungated_clock) { WideCounter(64, !io.csr_stall, inhibit = reg_mcountinhibit(0)) }
   val reg_hpmevent = io.counters.map(c => RegInit(0.U(xLen.W)))
